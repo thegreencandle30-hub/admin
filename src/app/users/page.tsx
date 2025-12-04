@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { DashboardLayout } from '@/components/templates';
 import { Button, Badge } from '@/components/atoms';
-import { getUsers, updateUserStatus } from '@/services/user-service';
+import { ConfirmDialog, useToast } from '@/components/molecules';
+import { getUsers, updateUserStatus, deleteUser } from '@/services/user-service';
 import type { User, Pagination, PaginatedResponse, ClientResponse } from '@/shared/types';
 
 // Data fetching component
@@ -14,6 +15,12 @@ function UsersContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const { showToast } = useToast();
+
+  // Delete confirmation state
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Initial data fetch using useEffect
   useEffect(() => {
@@ -61,7 +68,38 @@ function UsersContent() {
       setUsers(users.map(u =>
         u.id === user.id ? { ...u, isActive: !user.isActive } : u
       ));
+      showToast({ message: `User ${!user.isActive ? 'enabled' : 'disabled'} successfully`, variant: 'success' });
+    } else {
+      showToast({ message: response.error || 'Failed to update status', variant: 'error' });
     }
+  };
+
+  const handleDeleteClick = (user: User) => {
+    setUserToDelete(user);
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!userToDelete) return;
+
+    setIsDeleting(true);
+    const response = await deleteUser(userToDelete.id);
+
+    if (response.success) {
+      setUsers(users.filter(u => u.id !== userToDelete.id));
+      showToast({ message: 'User deleted successfully', variant: 'success' });
+    } else {
+      showToast({ message: response.error || 'Failed to delete user', variant: 'error' });
+    }
+
+    setIsDeleting(false);
+    setDeleteConfirmOpen(false);
+    setUserToDelete(null);
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteConfirmOpen(false);
+    setUserToDelete(null);
   };
 
   return (
@@ -74,13 +112,21 @@ function UsersContent() {
             Manage user accounts and subscriptions
           </p>
         </div>
+        <Link href="/users/new">
+          <Button className="animate-slide-up">
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Add User
+          </Button>
+        </Link>
       </div>
 
       {/* Search Bar */}
       <form onSubmit={handleSearch} className="flex gap-2 animate-slide-up" style={{ animationDelay: '0.1s' }}>
         <input
           type="text"
-          placeholder="Search by mobile number..."
+          placeholder="Search by name, mobile or city..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="flex-1 px-4 py-2 border border-input rounded-3xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
@@ -107,7 +153,10 @@ function UsersContent() {
               <thead className="bg-muted/50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Mobile
+                    User
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    City
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Status
@@ -127,9 +176,19 @@ function UsersContent() {
                 {users.map((user) => (
                   <tr key={user.id} className="hover:bg-muted/50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm font-medium text-foreground">
-                        {user.mobile}
-                      </span>
+                      <div className="flex flex-col">
+                        {user.fullName && (
+                          <span className="text-sm font-medium text-foreground">
+                            {user.fullName}
+                          </span>
+                        )}
+                        <span className={`text-sm ${user.fullName ? 'text-muted-foreground' : 'font-medium text-foreground'}`}>
+                          {user.mobile}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
+                      {user.city || '-'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <Badge variant={user.isActive ? 'success' : 'danger'}>
@@ -139,7 +198,7 @@ function UsersContent() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       {user.hasActiveSubscription ? (
                         <Badge variant="info">
-                          {user.subscription.plan} (Active)
+                          {user.subscription.isUnlimited ? 'Unlimited' : `${user.subscription.plan} (Active)`}
                         </Badge>
                       ) : (
                         <Badge variant="default">No Subscription</Badge>
@@ -155,12 +214,26 @@ function UsersContent() {
                             View
                           </Button>
                         </Link>
+                        <Link href={`/users/${user.id}/edit`}>
+                          <Button variant="ghost" size="sm">
+                            Edit
+                          </Button>
+                        </Link>
                         <Button
-                          variant={user.isActive ? 'danger' : 'ghost'}
+                          variant="ghost"
                           size="sm"
+                          className={user.isActive ? 'bg-orange-100 hover:bg-orange-200 text-orange-700 dark:bg-orange-900/30 dark:hover:bg-orange-900/50 dark:text-orange-400' : 'bg-green-100 hover:bg-green-200 text-green-700 dark:bg-green-900/30 dark:hover:bg-green-900/50 dark:text-green-400'}
                           onClick={() => handleToggleStatus(user)}
                         >
                           {user.isActive ? 'Disable' : 'Enable'}
+                        </Button>
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          className="bg-red-800 hover:bg-red-600"
+                          onClick={() => handleDeleteClick(user)}
+                        >
+                          Delete
                         </Button>
                       </div>
                     </td>
@@ -198,6 +271,18 @@ function UsersContent() {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        open={deleteConfirmOpen}
+        title="Delete User"
+        message={`Are you sure you want to delete the user with mobile ${userToDelete?.mobile}? This action cannot be undone and will also delete all their payment history.`}
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        isLoading={isDeleting}
+        onConfirmAction={handleDeleteConfirm}
+        onCancelAction={handleDeleteCancel}
+      />
     </div>
   );
 }

@@ -26,6 +26,25 @@ export interface PaymentsResponse {
   pagination: Pagination;
 }
 
+export interface CreateUserData {
+  fullName?: string;
+  mobile: string;
+  city?: string;
+  isActive?: boolean;
+  accessDays?: number;
+  isUnlimited?: boolean;
+}
+
+export interface UpdateUserData {
+  fullName?: string;
+  mobile?: string;
+  city?: string;
+  isActive?: boolean;
+  accessDays?: number;
+  isUnlimited?: boolean;
+  extendSubscription?: boolean;
+}
+
 /**
  * Get all users with pagination
  */
@@ -89,12 +108,51 @@ export const activateSubscription = async (
   });
 };
 
+/**
+ * Create new user (admin only)
+ */
+export const createUser = async (
+  data: CreateUserData
+): Promise<ClientResponse<{ user: User; message: string }>> => {
+  return apiClient<{ user: User; message: string }>('/admin/users', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+};
+
+/**
+ * Update user (admin only)
+ */
+export const updateUser = async (
+  id: string,
+  data: UpdateUserData
+): Promise<ClientResponse<{ user: User; message: string }>> => {
+  return apiClient<{ user: User; message: string }>(`/admin/users/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+};
+
+/**
+ * Delete user (admin only)
+ */
+export const deleteUser = async (
+  id: string
+): Promise<ClientResponse<{ message: string }>> => {
+  return apiClient<{ message: string }>(`/admin/users/${id}`, {
+    method: 'DELETE',
+  });
+};
+
 const userService = {
   getUsers,
   getUserById,
   getUserPayments,
   updateUserStatus,
   activateSubscription,
+  createUser,
+  updateUser,
+  deleteUser,
 };
 
 export default userService;

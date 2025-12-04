@@ -32,8 +32,10 @@ export interface Admin {
 // User interface
 export interface User {
   id: string;
-  firebaseUid: string;
+  firebaseUid: string | null;
+  fullName: string | null;
   mobile: string;
+  city: string | null;
   isActive: boolean;
   subscription: Subscription;
   hasActiveSubscription: boolean;
@@ -43,10 +45,11 @@ export interface User {
 
 // Subscription interface
 export interface Subscription {
-  plan: 'daily' | 'weekly' | null;
+  plan: 'daily' | 'weekly' | 'custom' | null;
   startDate: string | null;
   endDate: string | null;
   isActive: boolean;
+  isUnlimited?: boolean;
 }
 
 // Call interface
