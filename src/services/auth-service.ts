@@ -1,4 +1,4 @@
-import { API_BASE_URL } from '@/shared/constants';
+import { API_BASE_URL, TOKEN_KEYS } from '@/shared/constants';
 import { apiClient, setTokens, clearTokens } from './api-client';
 import type { ClientResponse, LoginResponse, Admin } from '@/shared/types';
 
@@ -70,7 +70,7 @@ export const getCurrentAdmin = async (): Promise<ClientResponse<{ admin: Admin }
  */
 export const isAuthenticated = (): boolean => {
   if (typeof window === 'undefined') return false;
-  const token = localStorage.getItem('varlyq_access_token');
+  const token = localStorage.getItem(TOKEN_KEYS.ACCESS_TOKEN);
   return !!token;
 };
 

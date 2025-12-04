@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "VARLYQ Admin",
-  description: "VARLYQ Trading Calls Admin Panel",
+  title: "The Green Candle Admin",
+  description: "The Green Candle Trading Calls Admin Panel",
 };
 
 export default function RootLayout({

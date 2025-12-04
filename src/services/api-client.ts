@@ -1,4 +1,9 @@
 import { API_BASE_URL, TOKEN_KEYS } from '@/shared/constants';
+// Backwards compatibility for legacy token keys. We read/convert legacy keys if present.
+const LEGACY_TOKEN_KEYS = {
+  ACCESS_TOKEN: 'varlyq_access_token',
+  REFRESH_TOKEN: 'varlyq_refresh_token',
+} as const;
 import type { ClientResponse } from '@/shared/types';
 
 /**
@@ -6,6 +11,21 @@ import type { ClientResponse } from '@/shared/types';
  */
 export const getAccessToken = (): string | null => {
   if (typeof window === 'undefined') return null;
+  // If the old legacy token exists and the new token is absent, migrate it
+  try {
+    const newToken = localStorage.getItem(TOKEN_KEYS.ACCESS_TOKEN);
+    if (!newToken) {
+      const legacyToken = localStorage.getItem(LEGACY_TOKEN_KEYS.ACCESS_TOKEN);
+      if (legacyToken) {
+        localStorage.setItem(TOKEN_KEYS.ACCESS_TOKEN, legacyToken);
+        localStorage.removeItem(LEGACY_TOKEN_KEYS.ACCESS_TOKEN);
+        return legacyToken;
+      }
+    }
+  } catch (err) {
+    // If localStorage access fails for some reason, fallthrough to normal read
+    // (e.g., in some restricted browser environments)
+  }
   return localStorage.getItem(TOKEN_KEYS.ACCESS_TOKEN);
 };
 
@@ -14,6 +34,17 @@ export const getAccessToken = (): string | null => {
  */
 export const getRefreshToken = (): string | null => {
   if (typeof window === 'undefined') return null;
+  try {
+    const newToken = localStorage.getItem(TOKEN_KEYS.REFRESH_TOKEN);
+    if (!newToken) {
+      const legacyToken = localStorage.getItem(LEGACY_TOKEN_KEYS.REFRESH_TOKEN);
+      if (legacyToken) {
+        localStorage.setItem(TOKEN_KEYS.REFRESH_TOKEN, legacyToken);
+        localStorage.removeItem(LEGACY_TOKEN_KEYS.REFRESH_TOKEN);
+        return legacyToken;
+      }
+    }
+  } catch (err) {}
   return localStorage.getItem(TOKEN_KEYS.REFRESH_TOKEN);
 };
 
@@ -22,8 +53,20 @@ export const getRefreshToken = (): string | null => {
  */
 export const setTokens = (accessToken: string, refreshToken: string): void => {
   if (typeof window === 'undefined') return;
+  // Save to the new keys
   localStorage.setItem(TOKEN_KEYS.ACCESS_TOKEN, accessToken);
   localStorage.setItem(TOKEN_KEYS.REFRESH_TOKEN, refreshToken);
+  // Remove legacy keys (migration step)
+  try {
+    if (localStorage.getItem(LEGACY_TOKEN_KEYS.ACCESS_TOKEN)) {
+      localStorage.removeItem(LEGACY_TOKEN_KEYS.ACCESS_TOKEN);
+    }
+    if (localStorage.getItem(LEGACY_TOKEN_KEYS.REFRESH_TOKEN)) {
+      localStorage.removeItem(LEGACY_TOKEN_KEYS.REFRESH_TOKEN);
+    }
+  } catch (err) {
+    // ignore - cannot remove
+  }
 };
 
 /**
@@ -31,8 +74,15 @@ export const setTokens = (accessToken: string, refreshToken: string): void => {
  */
 export const clearTokens = (): void => {
   if (typeof window === 'undefined') return;
+  // Remove both new and legacy keys
   localStorage.removeItem(TOKEN_KEYS.ACCESS_TOKEN);
   localStorage.removeItem(TOKEN_KEYS.REFRESH_TOKEN);
+  try {
+    localStorage.removeItem(LEGACY_TOKEN_KEYS.ACCESS_TOKEN);
+    localStorage.removeItem(LEGACY_TOKEN_KEYS.REFRESH_TOKEN);
+  } catch (err) {
+    // ignore
+  }
 };
 
 /**

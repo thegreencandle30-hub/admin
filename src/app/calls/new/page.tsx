@@ -119,10 +119,10 @@ export default function NewCallPage() {
         </div>
 
         {/* Form */}
-        <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
+        <div className="bg-card rounded-3xl shadow-sm border border-border p-4 sm:p-6 animate-slide-up">
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-3xl text-red-700 dark:text-red-400">
+              <div className="p-4 bg-destructive/15 border border-destructive/20 rounded-3xl text-destructive">
                 {error}
               </div>
             )}
@@ -131,7 +131,7 @@ export default function NewCallPage() {
             <div>
               <label
                 htmlFor="date"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                className="block text-sm font-medium text-foreground mb-2"
               >
                 Date
               </label>
@@ -141,7 +141,7 @@ export default function NewCallPage() {
                 name="date"
                 value={formData.date}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-3xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-input rounded-3xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                 required
               />
             </div>
@@ -151,7 +151,7 @@ export default function NewCallPage() {
               <div>
                 <label
                   htmlFor="commodity"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  className="block text-sm font-medium text-foreground mb-2"
                 >
                   Commodity
                 </label>
@@ -160,7 +160,7 @@ export default function NewCallPage() {
                   name="commodity"
                   value={formData.commodity}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-3xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-input rounded-3xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                   required
                 >
                   {COMMODITY_OPTIONS.map((option) => (
@@ -174,7 +174,7 @@ export default function NewCallPage() {
               <div>
                 <label
                   htmlFor="type"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  className="block text-sm font-medium text-foreground mb-2"
                 >
                   Call Type
                 </label>
@@ -183,7 +183,7 @@ export default function NewCallPage() {
                   name="type"
                   value={formData.type}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-3xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-input rounded-3xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                   required
                 >
                   {TYPE_OPTIONS.map((option) => (
@@ -199,7 +199,7 @@ export default function NewCallPage() {
             <div>
               <label
                 htmlFor="entryPrice"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                className="block text-sm font-medium text-foreground mb-2"
               >
                 Entry Price (₹)
               </label>
@@ -220,7 +220,7 @@ export default function NewCallPage() {
               <div>
                 <label
                   htmlFor="target"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  className="block text-sm font-medium text-foreground mb-2"
                 >
                   Target Price (₹)
                 </label>
@@ -235,7 +235,7 @@ export default function NewCallPage() {
                   min="0"
                   required
                 />
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   {formData.type === 'buy' ? 'Should be higher than entry' : 'Should be lower than entry'}
                 </p>
               </div>
@@ -243,7 +243,7 @@ export default function NewCallPage() {
               <div>
                 <label
                   htmlFor="stopLoss"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  className="block text-sm font-medium text-foreground mb-2"
                 >
                   Stop Loss (₹)
                 </label>
@@ -258,14 +258,14 @@ export default function NewCallPage() {
                   min="0"
                   required
                 />
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   {formData.type === 'buy' ? 'Should be lower than entry' : 'Should be higher than entry'}
                 </p>
               </div>
             </div>
 
             {/* Submit Buttons */}
-            <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t border-border">
               <Link href="/calls">
                 <Button type="button" variant="secondary">
                   Cancel
@@ -279,9 +279,9 @@ export default function NewCallPage() {
         </div>
 
         {/* Help Text */}
-        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-3xl p-4">
-          <h3 className="font-medium text-blue-800 dark:text-blue-300 mb-2">💡 Tips</h3>
-          <ul className="text-sm text-blue-700 dark:text-blue-400 space-y-1 list-disc list-inside">
+        <div className="bg-info/10 border border-info/20 rounded-3xl p-4 animate-slide-up" style={{ animationDelay: '0.1s' }}>
+          <h3 className="font-medium text-info mb-2">💡 Tips</h3>
+          <ul className="text-sm text-info/80 space-y-1 list-disc list-inside">
             <li>For <strong>BUY</strong> calls: Target &gt; Entry &gt; Stop Loss</li>
             <li>For <strong>SELL</strong> calls: Stop Loss &gt; Entry &gt; Target</li>
             <li>Calls are automatically set to &quot;active&quot; status when created</li>

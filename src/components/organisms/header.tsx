@@ -27,7 +27,7 @@ const Header = ({ admin, onMenuClick }: HeaderProps) => {
   };
 
   return (
-    <header className="sticky top-0 z-30 h-16 bg-background/80 backdrop-blur-md border-b border-border px-4 sm:px-6 flex items-center justify-between transition-all duration-200">
+    <header className="sticky top-0 z-30 h-16 bg-background/95 backdrop-blur-xl border-b border-border px-4 sm:px-6 flex items-center justify-between transition-all duration-200 shadow-lg">
       <div className="flex items-center gap-4">
         {/* Mobile menu button */}
         <button
@@ -39,9 +39,9 @@ const Header = ({ admin, onMenuClick }: HeaderProps) => {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
-        
+
         <h1 className="text-base sm:text-lg font-semibold text-foreground">
-          Admin Panel
+          The Green Candle
         </h1>
       </div>
 
@@ -64,13 +64,13 @@ const Header = ({ admin, onMenuClick }: HeaderProps) => {
 
         {isDropdownOpen && (
           <div className="absolute right-0 mt-2 w-48 bg-popover rounded-3xl shadow-lg border border-border py-1 z-50 animate-in fade-in zoom-in-95 duration-200">
-            <div className="px-4 py-2 border-b border-border">
+            <div className="px-4 py-2 border-border">
               <p className="text-sm font-medium text-popover-foreground truncate">{admin?.email}</p>
               <p className="text-xs text-muted-foreground capitalize">{admin?.role}</p>
             </div>
             <Button
               variant="ghost"
-              className="w-full justify-start text-destructive hover:bg-destructive/10 hover:text-destructive"
+              className="w-full border-none justify-start text-destructive hover:bg-destructive/10 hover:text-destructive"
               onClick={handleLogout}
             >
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

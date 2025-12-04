@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { DashboardLayout } from '@/components/templates';
 import { Button, Badge } from '@/components/atoms';
 import { getCalls, deleteCall } from '@/services/call-service';
+import ConfirmDialog from '@/components/molecules/confirm-dialog';
+import { useToast } from '@/components/molecules';
 import type { Call } from '@/services/call-service';
 import type { Pagination, ClientResponse, PaginatedResponse } from '@/shared/types';
 
@@ -64,7 +66,10 @@ function CallsContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [selectedCall, setSelectedCall] = useState<Call | null>(null);
+  const { showToast } = useToast();
+
   // Filters
   const [commodity, setCommodity] = useState('');
   const [status, setStatus] = useState('');
@@ -113,23 +118,28 @@ function CallsContent() {
     await fetchCalls(newPage);
   };
 
-  const handleDelete = async (call: Call) => {
-    if (!confirm(`Are you sure you want to delete this ${call.commodity} call?`)) {
-      return;
-    }
+  const handleDeleteClick = (call: Call) => {
+    setSelectedCall(call);
+    setConfirmOpen(true);
+  };
 
-    const callId = call.id || call._id;
+  const handleDeleteConfirm = async () => {
+    if (!selectedCall) return;
+    const callId = selectedCall.id || selectedCall._id;
     if (!callId) return;
 
     setIsDeleting(callId);
     const response = await deleteCall(callId);
-    
+
     if (response.success) {
       setCalls(calls.filter(c => (c.id || c._id) !== callId));
+      showToast({ message: 'Call deleted successfully', variant: 'success' });
     } else {
-      alert(response.error || 'Failed to delete call');
+      showToast({ message: response.error || 'Failed to delete call', variant: 'error' });
     }
     setIsDeleting(null);
+    setConfirmOpen(false);
+    setSelectedCall(null);
   };
 
   const formatPrice = (price: number): string => {
@@ -152,13 +162,13 @@ function CallsContent() {
     <div className="space-y-6">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Calls</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
+        <div className="animate-slide-up">
+          <h1 className="text-2xl font-bold text-foreground">Calls</h1>
+          <p className="text-muted-foreground mt-1">
             Manage trading calls for commodities
           </p>
         </div>
-        <Link href="/calls/new">
+        <Link href="/calls/new" className="animate-slide-up" style={{ animationDelay: '0.1s' }}>
           <Button>
             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -169,44 +179,44 @@ function CallsContent() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white dark:bg-gray-800 rounded-3xl p-4 shadow-sm border border-gray-200 dark:border-gray-700">
+      <div className="bg-card rounded-3xl p-4 shadow-sm border border-border animate-slide-up" style={{ animationDelay: '0.2s' }}>
         <div className="flex flex-wrap gap-4">
           <select
             value={commodity}
             onChange={(e) => setCommodity(e.target.value)}
-            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-3xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-3 py-2 border border-input rounded-3xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
           >
             {COMMODITY_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
+              <option key={option.value} value={option.value} className="bg-background text-foreground">
                 {option.label}
               </option>
             ))}
           </select>
-          
+
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value)}
-            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-3xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-3 py-2 border border-input rounded-3xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
           >
             {STATUS_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
+              <option key={option.value} value={option.value} className="bg-background text-foreground">
                 {option.label}
               </option>
             ))}
           </select>
-          
+
           <select
             value={type}
             onChange={(e) => setType(e.target.value)}
-            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-3xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-3 py-2 border border-input rounded-3xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
           >
             {TYPE_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
+              <option key={option.value} value={option.value} className="bg-background text-foreground">
                 {option.label}
               </option>
             ))}
           </select>
-          
+
           <Button onClick={handleFilter} isLoading={isLoading}>
             Apply Filters
           </Button>
@@ -214,14 +224,14 @@ function CallsContent() {
       </div>
 
       {/* Calls Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <div className="bg-card rounded-3xl shadow-sm border border-border overflow-hidden animate-slide-up" style={{ animationDelay: '0.3s' }}>
         {isLoading ? (
           <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
         ) : calls.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-64 text-gray-500 dark:text-gray-400">
-            <svg className="w-12 h-12 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
+            <svg className="w-12 h-12 mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
             </svg>
             <p>No calls found</p>
@@ -232,40 +242,40 @@ function CallsContent() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50 dark:bg-gray-700">
+              <thead className="bg-muted/50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Date
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Commodity
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Type
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Entry
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Target
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Stoploss
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody className="divide-y divide-border">
                 {calls.map((call) => {
                   const callId = call.id || call._id;
                   return (
-                    <tr key={callId} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                    <tr key={callId} className="hover:bg-muted/50 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
                         {formatDate(call.date)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -278,13 +288,13 @@ function CallsContent() {
                           {call.type.toUpperCase()}
                         </Badge>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
                         {formatPrice(call.entryPrice)}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600 dark:text-green-400">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-success">
                         {formatPrice(call.target)}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600 dark:text-red-400">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-destructive">
                         {formatPrice(call.stopLoss)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -301,8 +311,9 @@ function CallsContent() {
                           </Link>
                           <Button
                             variant="danger"
+                            className="bg-red-800 hover:bg-red-600"
                             size="sm"
-                            onClick={() => handleDelete(call)}
+                            onClick={() => handleDeleteClick(call)}
                             isLoading={isDeleting === callId}
                             disabled={isDeleting !== null}
                           >
@@ -318,10 +329,22 @@ function CallsContent() {
           </div>
         )}
 
+        <ConfirmDialog
+          open={confirmOpen}
+          title="Delete Call"
+          message={`Are you sure you want to delete this ${selectedCall?.commodity} call?`}
+          onCancelAction={() => {
+            setConfirmOpen(false);
+            setSelectedCall(null);
+          }}
+          onConfirmAction={handleDeleteConfirm}
+          isLoading={!!isDeleting}
+        />
+
         {/* Pagination */}
         {pagination && pagination.totalPages > 1 && (
-          <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+          <div className="px-6 py-4 border-t border-border flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">
               Showing {calls?.length || 0} of {pagination.total} calls
             </p>
             <div className="flex gap-2">

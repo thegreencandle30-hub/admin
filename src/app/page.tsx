@@ -76,7 +76,7 @@ export default function DashboardPage() {
         {/* Page Header */}
         <div className="animate-slide-up">
           <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">Dashboard</h1>
-          <p className="text-sm sm:text-base text-muted-foreground mt-1">Welcome to VARLYQ Admin Panel</p>
+          <p className="text-sm sm:text-base text-muted-foreground mt-1">Welcome to The Green Candle Admin</p>
         </div>
 
         {isLoading ? (
@@ -150,18 +150,18 @@ export default function DashboardPage() {
                   <AreaChart data={chartData}>
                     <defs>
                       <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                        <stop offset="5%" stopColor="#82f163ff" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="#6df163ff" stopOpacity={0}/>
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#282a27ff" vertical={false} />
                     <XAxis dataKey="name" stroke="#a1a1aa" fontSize={12} tickLine={false} axisLine={false} />
                     <YAxis stroke="#a1a1aa" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `₹${value}`} />
                     <Tooltip 
                       contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', borderRadius: '0.5rem' }}
                       itemStyle={{ color: '#fafafa' }}
                     />
-                    <Area type="monotone" dataKey="revenue" stroke="#6366f1" strokeWidth={2} fillOpacity={1} fill="url(#colorRevenue)" />
+                    <Area type="monotone" dataKey="revenue" stroke="#68f163ff" strokeWidth={2} fillOpacity={1} fill="url(#colorRevenue)" />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
@@ -330,8 +330,8 @@ export default function DashboardPage() {
                   <AreaChart data={chartData}>
                     <defs>
                       <linearGradient id="revenueGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" style={{ stopColor: 'rgb(229 231 235)', stopOpacity: 1 }} />
-                        <stop offset="100%" style={{ stopColor: 'rgb(129 140 248)', stopOpacity: 1 }} />
+                        <stop offset="0%" stopColor='#e7ebe5ff' stopOpacity={1}/>
+                        <stop offset="100%" stopColor='#9df881ff' stopOpacity={1} />
                       </linearGradient>
                     </defs>
                     <XAxis dataKey="name" stroke="rgb(156 163 175)" />
@@ -341,7 +341,7 @@ export default function DashboardPage() {
                     <Area
                       type="monotone"
                       dataKey="revenue"
-                      stroke="rgb(67 56 202)"
+                      stroke="#38ca3fff"
                       strokeWidth={2}
                       fill="url(#revenueGradient)"
                     />

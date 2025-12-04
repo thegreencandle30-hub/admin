@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { DashboardLayout } from '@/components/templates';
 import { Button, Badge } from '@/components/atoms';
 import { getUserById, getUserPayments, updateUserStatus, activateSubscription } from '@/services/user-service';
+import ConfirmDialog from '@/components/molecules/confirm-dialog';
+import { useToast } from '@/components/molecules';
 import type { Payment } from '@/services/user-service';
 import type { User, Pagination } from '@/shared/types';
 
@@ -19,6 +21,9 @@ export default function UserDetailsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pendingPlan, setPendingPlan] = useState<'daily' | 'weekly' | null>(null);
+  const { showToast } = useToast();
   const [currentPage, setCurrentPage] = useState(1);
 
   // Fetch user data
@@ -54,29 +59,35 @@ export default function UserDetailsPage() {
 
     if (response.success && response.data) {
       setUser(response.data.user);
+      showToast({ message: `User ${!user?.isActive ? 'enabled' : 'disabled'} successfully`, variant: 'success' });
     } else {
-      alert(response.error || 'Failed to update status');
+      showToast({ message: response.error || 'Failed to update status', variant: 'error' });
     }
     setIsUpdating(false);
   };
 
-  const handleActivateSubscription = async (plan: 'daily' | 'weekly') => {
+  const handleActivateSubscriptionClick = (plan: 'daily' | 'weekly') => {
     if (!user) return;
+    setPendingPlan(plan);
+    setConfirmOpen(true);
+  };
 
-    if (!confirm(`Are you sure you want to activate ${plan} subscription for this user?`)) {
-      return;
-    }
+  const handleActivateSubscriptionConfirm = async () => {
+    if (!user || !pendingPlan) return;
 
     setIsUpdating(true);
-    const response = await activateSubscription(userId, plan);
+    const response = await activateSubscription(userId, pendingPlan);
 
     if (response.success && response.data) {
       setUser(response.data.user);
-      alert('Subscription activated successfully');
+      showToast({ message: 'Subscription activated successfully', variant: 'success' });
     } else {
-      alert(response.error || 'Failed to activate subscription');
+      showToast({ message: response.error || 'Failed to activate subscription', variant: 'error' });
     }
+
     setIsUpdating(false);
+    setPendingPlan(null);
+    setConfirmOpen(false);
   };
 
   const handlePageChange = async (newPage: number) => {
@@ -171,15 +182,15 @@ export default function UserDetailsPage() {
           {/* User Info Card */}
           <div className="lg:col-span-1 space-y-4 sm:space-y-6">
             {/* Basic Info */}
-            <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
+            <div className="bg-card rounded-3xl shadow-sm border border-border p-4 sm:p-6 animate-slide-up">
               <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
-                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
-                  <svg className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                  <svg className="w-6 h-6 sm:w-8 sm:h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-gray-100 truncate">
+                  <h2 className="text-lg sm:text-xl font-semibold text-foreground truncate">
                     {user?.mobile}
                   </h2>
                   <Badge variant={user?.isActive ? 'success' : 'danger'}>
@@ -190,20 +201,20 @@ export default function UserDetailsPage() {
 
               <div className="space-y-3">
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-500 dark:text-gray-400">User ID</span>
-                  <span className="text-gray-900 dark:text-gray-100 font-mono text-xs">
+                  <span className="text-muted-foreground">User ID</span>
+                  <span className="text-foreground font-mono text-xs">
                     {user?.id}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-500 dark:text-gray-400">Joined</span>
-                  <span className="text-gray-900 dark:text-gray-100">
+                  <span className="text-muted-foreground">Joined</span>
+                  <span className="text-foreground">
                     {formatDate(user?.createdAt || null)}
                   </span>
                 </div>
               </div>
 
-              <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+              <div className="mt-6 pt-6 border-t border-border">
                 <Button
                   variant={user?.isActive ? 'danger' : 'secondary'}
                   className="w-full"
@@ -216,77 +227,87 @@ export default function UserDetailsPage() {
             </div>
 
             {/* Subscription Card */}
-            <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
-              <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+            <div className="bg-card rounded-3xl shadow-sm border border-border p-4 sm:p-6 animate-slide-up" style={{ animationDelay: '0.1s' }}>
+              <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4">
                 Subscription
               </h3>
 
               {user && isSubscriptionActive(user) ? (
                 <div className="space-y-3">
-                  <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-3xl">
+                  <div className="p-4 bg-success/10 border border-success/20 rounded-3xl">
                     <Badge variant="success" className="mb-2">Active</Badge>
-                    <p className="text-sm font-medium text-green-800 dark:text-green-300">
+                    <p className="text-sm font-medium text-success">
                       {user.subscription.plan?.toUpperCase()} Plan
                     </p>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-500 dark:text-gray-400">Start Date</span>
-                    <span className="text-gray-900 dark:text-gray-100">
+                    <span className="text-muted-foreground">Start Date</span>
+                    <span className="text-foreground">
                       {formatDate(user.subscription.startDate)}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-500 dark:text-gray-400">End Date</span>
-                    <span className="text-gray-900 dark:text-gray-100">
+                    <span className="text-muted-foreground">End Date</span>
+                    <span className="text-foreground">
                       {formatDate(user.subscription.endDate)}
                     </span>
                   </div>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  <div className="p-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-3xl text-center">
-                    <Badge variant="default">No Active Subscription</Badge>
+                <>
+                  <div className="space-y-4">
+                    <div className="p-4 bg-muted/50 border border-border rounded-3xl text-center">
+                      <Badge variant="default">No Active Subscription</Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Manually activate subscription:
+                    </p>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        className="flex-1"
+                        onClick={() => handleActivateSubscriptionClick('daily')}
+                        disabled={isUpdating}
+                      >
+                        Daily (₹99)
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        className="flex-1"
+                        onClick={() => handleActivateSubscriptionClick('weekly')}
+                        disabled={isUpdating}
+                      >
+                        Weekly (₹499)
+                      </Button>
+                    </div>
                   </div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Manually activate subscription:
-                  </p>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      className="flex-1"
-                      onClick={() => handleActivateSubscription('daily')}
-                      disabled={isUpdating}
-                    >
-                      Daily (₹99)
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      className="flex-1"
-                      onClick={() => handleActivateSubscription('weekly')}
-                      disabled={isUpdating}
-                    >
-                      Weekly (₹499)
-                    </Button>
-                  </div>
-                </div>
+                  <ConfirmDialog
+                    open={confirmOpen}
+                    title="Activate Subscription"
+                    message={`Are you sure you want to activate ${pendingPlan?.toUpperCase()} subscription for this user?`}
+                    onCancelAction={() => setConfirmOpen(false)}
+                    onConfirmAction={handleActivateSubscriptionConfirm}
+                    isLoading={isUpdating}
+                  />
+                </>
               )}
             </div>
           </div>
 
           {/* Payment History */}
           <div className="lg:col-span-2">
-            <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-              <div className="px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">
+            <div className="bg-card rounded-3xl shadow-sm border border-border overflow-hidden animate-slide-up" style={{ animationDelay: '0.2s' }}>
+              <div className="px-4 sm:px-6 py-4 border-b border-border">
+                <h3 className="text-base sm:text-lg font-semibold text-foreground">
                   Payment History
                 </h3>
               </div>
 
               {payments.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-64 text-gray-500 dark:text-gray-400">
-                  <svg className="w-12 h-12 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
+                  <svg className="w-12 h-12 mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                   </svg>
                   <p>No payment history</p>
@@ -295,29 +316,29 @@ export default function UserDetailsPage() {
                 <>
                   <div className="overflow-x-auto">
                     <table className="w-full">
-                      <thead className="bg-gray-50 dark:bg-gray-700">
+                      <thead className="bg-muted/50">
                         <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                             Date
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                             Plan
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                             Amount
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                             Status
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                             Transaction ID
                           </th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                      <tbody className="divide-y divide-border">
                         {payments.map((payment) => (
-                          <tr key={payment._id || payment.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                          <tr key={payment._id || payment.id} className="hover:bg-muted/50 transition-colors">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
                               {formatDate(payment.createdAt)}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
@@ -325,7 +346,7 @@ export default function UserDetailsPage() {
                                 {payment.plan.toUpperCase()}
                               </Badge>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground">
                               {formatPrice(payment.amount)}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
@@ -334,14 +355,14 @@ export default function UserDetailsPage() {
                                   payment.status === 'completed'
                                     ? 'success'
                                     : payment.status === 'failed'
-                                    ? 'danger'
-                                    : 'warning'
+                                      ? 'danger'
+                                      : 'warning'
                                 }
                               >
                                 {payment.status}
                               </Badge>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 font-mono">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground font-mono">
                               {payment.transactionId.slice(0, 20)}...
                             </td>
                           </tr>
@@ -352,8 +373,8 @@ export default function UserDetailsPage() {
 
                   {/* Pagination */}
                   {pagination && pagination.totalPages > 1 && (
-                    <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                    <div className="px-6 py-4 border-t border-border flex items-center justify-between">
+                      <p className="text-sm text-muted-foreground">
                         Page {currentPage} of {pagination.totalPages}
                       </p>
                       <div className="flex gap-2">

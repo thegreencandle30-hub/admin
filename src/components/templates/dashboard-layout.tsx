@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { Sidebar, Header } from '@/components/organisms';
+import { ToastProvider } from '@/components/molecules';
 import { getCurrentAdmin, isAuthenticated } from '@/services/auth-service';
 import type { Admin } from '@/shared/types';
 
@@ -29,7 +30,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         setIsSidebarOpen(false);
       }
     };
-    
+
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -75,7 +76,9 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       <div className="lg:ml-64 min-h-screen flex flex-col transition-all duration-300">
         <Header admin={admin} onMenuClick={handleMenuClick} />
         <main className="flex-1 p-4 sm:p-6 animate-fade-in">
-          {children}
+          <ToastProvider>
+            {children}
+          </ToastProvider>
         </main>
       </div>
     </div>

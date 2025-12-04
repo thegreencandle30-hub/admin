@@ -30,7 +30,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4 relative overflow-hidden">
+    <div 
+      className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden bg-cover bg-center bg-no-repeat bg-fixed"
+      style={{ backgroundImage: "url('/background.png')" }}
+    >
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-primary/10 blur-3xl animate-pulse-slow"></div>
@@ -41,14 +44,14 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-3xl bg-primary text-primary-foreground text-3xl font-bold mb-4 shadow-lg shadow-primary/25">
-            V
+            G
           </div>
-          <h1 className="text-3xl font-bold text-foreground tracking-tight">VARLYQ</h1>
-          <p className="text-muted-foreground mt-2">Admin Panel Access</p>
+          <h1 className="text-3xl font-bold text-foreground tracking-tight">The Green Candle</h1>
+          <p className="text-muted-foreground mt-2">The Green Candle Admin Access</p>
         </div>
 
         {/* Login Card */}
-        <div className="bg-card rounded-3xl shadow-xl border border-border p-8 backdrop-blur-sm">
+        <div className="bg-card rounded-3xl shadow-2xl border border-border p-8 backdrop-blur-sm">
           <h2 className="text-2xl font-semibold text-foreground mb-6">
             Sign In
           </h2>
@@ -92,7 +95,7 @@ export default function LoginPage() {
         </div>
 
         <p className="text-center text-muted-foreground text-sm mt-6">
-          © 2025 VARLYQ. All rights reserved.
+          © 2025 The Green Candle. All rights reserved.
         </p>
       </div>
     </div>

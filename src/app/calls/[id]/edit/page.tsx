@@ -194,10 +194,10 @@ export default function EditCallPage() {
         </div>
 
         {/* Form */}
-        <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
+        <div className="bg-card rounded-3xl shadow-sm border border-border p-4 sm:p-6 animate-slide-up">
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-3xl text-red-700 dark:text-red-400">
+              <div className="p-4 bg-destructive/15 border border-destructive/20 rounded-3xl text-destructive">
                 {error}
               </div>
             )}
@@ -206,7 +206,7 @@ export default function EditCallPage() {
             <div>
               <label
                 htmlFor="status"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                className="block text-sm font-medium text-foreground mb-2"
               >
                 Status
               </label>
@@ -215,7 +215,7 @@ export default function EditCallPage() {
                 name="status"
                 value={formData.status}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-3xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-input rounded-3xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                 required
               >
                 {STATUS_OPTIONS.map((option) => (
@@ -224,7 +224,7 @@ export default function EditCallPage() {
                   </option>
                 ))}
               </select>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 Update when the call hits target, stoploss, or expires
               </p>
             </div>
@@ -233,7 +233,7 @@ export default function EditCallPage() {
             <div>
               <label
                 htmlFor="date"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                className="block text-sm font-medium text-foreground mb-2"
               >
                 Date
               </label>
@@ -243,7 +243,7 @@ export default function EditCallPage() {
                 name="date"
                 value={formData.date}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-3xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-input rounded-3xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                 required
               />
             </div>
@@ -253,7 +253,7 @@ export default function EditCallPage() {
               <div>
                 <label
                   htmlFor="commodity"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  className="block text-sm font-medium text-foreground mb-2"
                 >
                   Commodity
                 </label>
@@ -262,7 +262,7 @@ export default function EditCallPage() {
                   name="commodity"
                   value={formData.commodity}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-3xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-input rounded-3xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                   required
                 >
                   {COMMODITY_OPTIONS.map((option) => (
@@ -276,7 +276,7 @@ export default function EditCallPage() {
               <div>
                 <label
                   htmlFor="type"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  className="block text-sm font-medium text-foreground mb-2"
                 >
                   Call Type
                 </label>
@@ -285,7 +285,7 @@ export default function EditCallPage() {
                   name="type"
                   value={formData.type}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-3xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-input rounded-3xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                   required
                 >
                   {TYPE_OPTIONS.map((option) => (
@@ -301,7 +301,7 @@ export default function EditCallPage() {
             <div>
               <label
                 htmlFor="entryPrice"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                className="block text-sm font-medium text-foreground mb-2"
               >
                 Entry Price (₹)
               </label>
@@ -322,7 +322,7 @@ export default function EditCallPage() {
               <div>
                 <label
                   htmlFor="target"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  className="block text-sm font-medium text-foreground mb-2"
                 >
                   Target Price (₹)
                 </label>
@@ -337,7 +337,7 @@ export default function EditCallPage() {
                   min="0"
                   required
                 />
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   {formData.type === 'buy' ? 'Should be higher than entry' : 'Should be lower than entry'}
                 </p>
               </div>
@@ -345,7 +345,7 @@ export default function EditCallPage() {
               <div>
                 <label
                   htmlFor="stopLoss"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  className="block text-sm font-medium text-foreground mb-2"
                 >
                   Stop Loss (₹)
                 </label>
@@ -360,14 +360,14 @@ export default function EditCallPage() {
                   min="0"
                   required
                 />
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   {formData.type === 'buy' ? 'Should be lower than entry' : 'Should be higher than entry'}
                 </p>
               </div>
             </div>
 
             {/* Submit Buttons */}
-            <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t border-border">
               <Link href="/calls">
                 <Button type="button" variant="secondary">
                   Cancel
@@ -382,9 +382,9 @@ export default function EditCallPage() {
 
         {/* Call Info */}
         {call && (
-          <div className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-3xl p-4">
-            <h3 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Call Information</h3>
-            <div className="text-sm text-gray-500 dark:text-gray-400 space-y-1">
+          <div className="bg-muted/50 border border-border rounded-3xl p-4 animate-slide-up" style={{ animationDelay: '0.1s' }}>
+            <h3 className="font-medium text-foreground mb-2">Call Information</h3>
+            <div className="text-sm text-muted-foreground space-y-1">
               <p>Created: {new Date(call.createdAt).toLocaleString('en-IN')}</p>
               <p>Last Updated: {new Date(call.updatedAt).toLocaleString('en-IN')}</p>
               {call.createdBy && <p>Created By: {call.createdBy.email}</p>}

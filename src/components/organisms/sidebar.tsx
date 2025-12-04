@@ -62,6 +62,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
       <aside
         className={`
           fixed left-0 top-0 z-50 h-screen w-64 bg-card border-r border-border
+          backdrop-blur-xl shadow-2xl
           transform transition-transform duration-300 ease-in-out
           lg:translate-x-0 lg:z-40
           ${isOpen ? 'translate-x-0' : '-translate-x-full'}
@@ -71,11 +72,11 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
         <div className="flex h-16 items-center justify-between px-4 border-b border-border">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-3xl bg-primary flex items-center justify-center text-primary-foreground font-bold shadow-lg shadow-primary/25">
-              V
+              G
             </div>
             <div>
-              <span className="text-xl font-bold text-foreground tracking-tight">VARLYQ</span>
-              <span className="ml-2 text-xs text-muted-foreground uppercase tracking-wider">Admin</span>
+              <span className="text-lg font-bold text-foreground tracking-tight">TGC</span>
+              <span className="ml-3 text-xs text-muted-foreground uppercase tracking-wider">Admin</span>
             </div>
           </div>
           {/* Close button for mobile */}
@@ -95,14 +96,14 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
           <ul className="space-y-2">
             {navItems.map((item) => {
               const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
-              
+
               return (
                 <li key={item.href}>
                   <Link
                     href={item.href}
                     onClick={onClose}
                     className={`
-                      flex items-center gap-3 px-4 py-2.5 rounded-3xl text-sm font-medium transition-all duration-200
+                      flex items-center border-b gap-3 px-4 py-2.5 rounded-3xl text-sm font-medium transition-all duration-200
                       ${isActive
                         ? 'bg-primary text-primary-foreground shadow-md shadow-primary/20 translate-x-1'
                         : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground hover:translate-x-1'

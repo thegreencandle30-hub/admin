@@ -14,8 +14,8 @@ export const HTTP_STATUS = {
 
 // Token storage keys
 export const TOKEN_KEYS = {
-  ACCESS_TOKEN: 'varlyq_access_token',
-  REFRESH_TOKEN: 'varlyq_refresh_token',
+  ACCESS_TOKEN: 'green_candle_access_token',
+  REFRESH_TOKEN: 'green_candle_refresh_token',
 } as const;
 
 // Pagination defaults
