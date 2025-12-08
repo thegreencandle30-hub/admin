@@ -280,7 +280,7 @@ export default function NewCallPage() {
 
         {/* Help Text */}
         <div className="bg-info/10 border border-info/20 rounded-3xl p-4 animate-slide-up" style={{ animationDelay: '0.1s' }}>
-          <h3 className="font-medium text-info mb-2">💡 Tips</h3>
+          <h3 className="font-medium text-info mb-2">💡 Note</h3>
           <ul className="text-sm text-info/80 space-y-1 list-disc list-inside">
             <li>For <strong>BUY</strong> calls: Target &gt; Entry &gt; Stop Loss</li>
             <li>For <strong>SELL</strong> calls: Stop Loss &gt; Entry &gt; Target</li>
