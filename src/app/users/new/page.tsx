@@ -1,44 +1,54 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { DashboardLayout } from '@/components/templates';
 import { Button, Input } from '@/components/atoms';
 import { useToast } from '@/components/molecules';
 import { createUser } from '@/services/user-service';
+import { getSubscriptionPlans } from '@/services/subscription-service';
 import type { CreateUserData } from '@/services/user-service';
+import type { SubscriptionPlan } from '@/services/subscription-service';
 
 function NewUserForm() {
   const router = useRouter();
   const { showToast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
 
   // Form state
-  const [formData, setFormData] = useState<CreateUserData>({
+  const [formData, setFormData] = useState({
     fullName: '',
     mobile: '',
+    password: '',
     city: '',
-    isActive: true,
-    accessDays: undefined,
-    isUnlimited: false,
+    planId: '',
+    accessDuration: '',
+    planTier: 'Regular' as 'Regular' | 'Premium' | 'International',
+    accessType: 'plan' as 'plan' | 'custom' | 'unlimited', // New field to track access type
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
+  useEffect(() => {
+    const loadPlans = async () => {
+      const response = await getSubscriptionPlans();
+      if (response.success && response.data) {
+        setPlans(response.data);
+      }
+    };
+    loadPlans();
+  }, []);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
     
-    if (type === 'checkbox') {
+    if (type === 'radio') {
       setFormData((prev) => ({
         ...prev,
-        [name]: checked,
-        // Clear accessDays when unlimited is selected
-        ...(name === 'isUnlimited' && checked ? { accessDays: undefined } : {}),
-      }));
-    } else if (name === 'accessDays') {
-      setFormData((prev) => ({
-        ...prev,
-        accessDays: value ? parseInt(value, 10) : undefined,
+        accessType: value as 'plan' | 'custom' | 'unlimited',
+        planId: '', // Reset plan
+        accessDuration: '', // Reset duration
       }));
     } else {
       setFormData((prev) => ({
@@ -53,38 +63,67 @@ function NewUserForm() {
     setError(null);
 
     // Validation
+    if (!formData.fullName.trim()) {
+      setError('Full name is required');
+      return;
+    }
+
     if (!formData.mobile.trim()) {
       setError('Mobile number is required');
       return;
     }
 
-    // Validate mobile number format (10 digits)
-    const mobileRegex = /^[6-9]\d{9}$/;
+    const mobileRegex = /^[0-9]{10}$/;
     if (!mobileRegex.test(formData.mobile.trim())) {
-      setError('Please enter a valid 10-digit mobile number starting with 6-9');
+      setError('Please enter a valid 10-digit mobile number');
       return;
     }
 
-    // Check if subscription access is provided
-    if (!formData.isUnlimited && !formData.accessDays) {
-      setError('Please provide access days or select unlimited access');
+    if (!formData.password.trim()) {
+      setError('Password is required');
       return;
     }
 
-    if (formData.accessDays && formData.accessDays < 1) {
-      setError('Access days must be at least 1');
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters');
       return;
+    }
+
+    // Validate access type
+    if (formData.accessType === 'plan' && !formData.planId) {
+      setError('Please select a subscription plan');
+      return;
+    }
+
+    if (formData.accessType === 'custom') {
+      const days = parseInt(formData.accessDuration, 10);
+      if (!formData.accessDuration || days < 1) {
+        setError('Please enter valid number of days (minimum 1)');
+        return;
+      }
     }
 
     setIsSubmitting(true);
 
-    const response = await createUser({
-      fullName: formData.fullName?.trim() || undefined,
+    // Prepare data based on access type
+    const submitData: CreateUserData = {
+      fullName: formData.fullName.trim(),
       mobile: formData.mobile.trim(),
-      city: formData.city?.trim() || undefined,
-      isActive: formData.isActive,
-      ...(formData.isUnlimited ? { isUnlimited: true } : { accessDays: formData.accessDays }),
-    });
+      password: formData.password.trim(),
+      city: formData.city.trim(),
+    };
+
+    if (formData.accessType === 'plan') {
+      submitData.planId = formData.planId;
+    } else if (formData.accessType === 'custom') {
+      submitData.accessDuration = parseInt(formData.accessDuration, 10);
+      submitData.planTier = formData.planTier;
+    } else if (formData.accessType === 'unlimited') {
+      submitData.accessDuration = 'unlimited';
+      submitData.planTier = formData.planTier;
+    }
+
+    const response = await createUser(submitData);
 
     if (response.success) {
       showToast({ message: 'User created successfully', variant: 'success' });
@@ -109,9 +148,9 @@ function NewUserForm() {
           </Button>
         </Link>
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">Add User</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">Create User</h1>
           <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
-            Create a new user account with platform access
+            Create a new user account and grant platform access
           </p>
         </div>
       </div>
@@ -131,16 +170,17 @@ function NewUserForm() {
               htmlFor="fullName"
               className="block text-sm font-medium text-foreground mb-2"
             >
-              Full Name
+              Full Name *
             </label>
             <Input
               type="text"
               id="fullName"
               name="fullName"
-              value={formData.fullName || ''}
+              value={formData.fullName}
               onChange={handleChange}
               placeholder="Enter full name"
               maxLength={100}
+              required
             />
           </div>
 
@@ -150,7 +190,7 @@ function NewUserForm() {
               htmlFor="mobile"
               className="block text-sm font-medium text-foreground mb-2"
             >
-              Mobile Number
+              Mobile Number *
             </label>
             <Input
               type="tel"
@@ -163,7 +203,7 @@ function NewUserForm() {
               required
             />
             <p className="text-xs text-muted-foreground mt-1">
-              User will be able to login with this mobile number
+              User will login with this mobile number
             </p>
           </div>
 
@@ -179,76 +219,148 @@ function NewUserForm() {
               type="text"
               id="city"
               name="city"
-              value={formData.city || ''}
+              value={formData.city}
               onChange={handleChange}
-              placeholder="Enter city"
-              maxLength={100}
+              placeholder="Enter city (Optional)"
             />
           </div>
 
-          {/* Access Type */}
+          {/* Password */}
+          <div>
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-foreground mb-2"
+            >
+              Password *
+            </label>
+            <Input
+              type="text"
+              id="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              placeholder="Enter password (min 6 characters)"
+              minLength={6}
+              required
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              User will use this to login along with mobile number
+            </p>
+          </div>
+
+          {/* Access Type Selection */}
           <div className="space-y-4">
             <label className="block text-sm font-medium text-foreground">
-              Platform Access
+              Grant Access *
             </label>
-            
-            {/* Unlimited Toggle */}
-            <div className="flex items-center gap-3">
+
+            {/* Option 1: Select from Plans */}
+            <div className="flex items-start gap-3">
               <input
-                type="checkbox"
-                id="isUnlimited"
-                name="isUnlimited"
-                checked={formData.isUnlimited}
+                type="radio"
+                id="accessType-plan"
+                name="accessType"
+                value="plan"
+                checked={formData.accessType === 'plan'}
                 onChange={handleChange}
-                className="w-5 h-5 rounded border-input text-primary focus:ring-primary"
+                className="mt-1"
               />
-              <label htmlFor="isUnlimited" className="text-sm text-foreground cursor-pointer">
-                Unlimited Access
-              </label>
+              <div className="flex-1">
+                <label htmlFor="accessType-plan" className="text-sm text-foreground cursor-pointer font-medium">
+                  Select Subscription Plan
+                </label>
+                {formData.accessType === 'plan' && (
+                  <select
+                    name="planId"
+                    value={formData.planId}
+                    onChange={handleChange}
+                    className="mt-2 w-full px-3 py-2 border border-input rounded-lg bg-background text-foreground focus:ring-2 focus:ring-primary focus:border-transparent"
+                    required={formData.accessType === 'plan'}
+                  >
+                    <option value="">Choose a plan...</option>
+                    {plans.map((plan) => (
+                      <option key={plan._id} value={plan._id}>
+                        {plan.name} - {plan.durationDays} days - ₹{plan.price}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
             </div>
 
-            {/* Access Days (shown when not unlimited) */}
-            {!formData.isUnlimited && (
-              <div>
-                <label
-                  htmlFor="accessDays"
-                  className="block text-sm font-medium text-foreground mb-2"
-                >
-                  Access Days
+            {/* Option 2: Custom Days */}
+            <div className="flex items-start gap-3">
+              <input
+                type="radio"
+                id="accessType-custom"
+                name="accessType"
+                value="custom"
+                checked={formData.accessType === 'custom'}
+                onChange={handleChange}
+                className="mt-1"
+              />
+              <div className="flex-1">
+                <label htmlFor="accessType-custom" className="text-sm text-foreground cursor-pointer font-medium">
+                  Custom Duration
                 </label>
-                <Input
-                  type="number"
-                  id="accessDays"
-                  name="accessDays"
-                  value={formData.accessDays || ''}
-                  onChange={handleChange}
-                  placeholder="Enter number of days"
-                  min="1"
-                  max="3650"
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Number of days the user can access the platform (max 10 years)
-                </p>
+                {formData.accessType === 'custom' && (
+                  <div className="mt-2 space-y-3">
+                    <Input
+                      type="number"
+                      name="accessDuration"
+                      value={formData.accessDuration}
+                      onChange={handleChange}
+                      placeholder="Enter number of days"
+                      min="1"
+                      max="3650"
+                      required={formData.accessType === 'custom'}
+                    />
+                    <select
+                      name="planTier"
+                      value={formData.planTier}
+                      onChange={handleChange}
+                      className="w-full px-3 py-2 border border-input rounded-lg bg-background text-foreground focus:ring-2 focus:ring-primary focus:border-transparent"
+                    >
+                      <option value="Regular">Regular</option>
+                      <option value="Premium">Premium</option>
+                      <option value="International">International</option>
+                    </select>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            </div>
 
-          {/* Active Status */}
-          <div className="flex items-center gap-3">
-            <input
-              type="checkbox"
-              id="isActive"
-              name="isActive"
-              checked={formData.isActive}
-              onChange={handleChange}
-              className="w-5 h-5 rounded border-input text-primary focus:ring-primary"
-            />
-            <label htmlFor="isActive" className="text-sm text-foreground cursor-pointer">
-              Account Active
-            </label>
-            <span className="text-xs text-muted-foreground">
-              (Inactive users cannot login)
-            </span>
+            {/* Option 3: Unlimited */}
+            <div className="flex items-start gap-3">
+              <input
+                type="radio"
+                id="accessType-unlimited"
+                name="accessType"
+                value="unlimited"
+                checked={formData.accessType === 'unlimited'}
+                onChange={handleChange}
+                className="mt-1"
+              />
+              <div className="flex-1">
+                <label htmlFor="accessType-unlimited" className="text-sm text-foreground cursor-pointer font-medium">
+                  Unlimited Access
+                </label>
+                {formData.accessType === 'unlimited' && (
+                  <div className="mt-2">
+                    <select
+                      name="planTier"
+                      value={formData.planTier}
+                      onChange={handleChange}
+                      className="w-full px-3 py-2 border border-input rounded-lg bg-background text-foreground focus:ring-2 focus:ring-primary focus:border-transparent"
+                    >
+                      <option value="Regular">Regular</option>
+                      <option value="Premium">Premium</option>
+                      <option value="International">International</option>
+                    </select>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Submit Buttons */}
@@ -267,11 +379,11 @@ function NewUserForm() {
 
       {/* Info Box */}
       <div className="bg-info/10 border border-info/20 rounded-3xl p-4 animate-slide-up" style={{ animationDelay: '0.1s' }}>
-        <h3 className="font-medium text-info mb-2">💡 Note</h3>
+        <h3 className="font-medium text-info mb-2">💡 Information</h3>
         <ul className="text-sm text-info/80 space-y-1 list-disc list-inside">
-          <li>Users created here will be able to login using OTP verification on their mobile number</li>
-          <li>The subscription access will start from the time of creation</li>
-          <li>You can edit the user details or extend their access later</li>
+          <li>Users will be able to login using Mobile + Password on the app</li>
+          <li>Access expires at 00:00 AM IST (midnight) on the specified day</li>
+          <li>You can extend access or modify tier later from user details page</li>
         </ul>
       </div>
     </div>

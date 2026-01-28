@@ -156,6 +156,9 @@ function UsersContent() {
                     ID / User
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Mobile
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     City
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
@@ -180,15 +183,13 @@ function UsersContent() {
                         <span className="text-xs font-mono text-primary bg-primary/10 px-1.5 py-0.5 rounded-md w-fit mb-1">
                           #{user.displayId || 'N/A'}
                         </span>
-                        {user.fullName && (
-                          <span className="text-sm font-medium text-foreground">
-                            {user.fullName}
-                          </span>
-                        )}
-                        <span className={`text-sm ${user.fullName ? 'text-muted-foreground' : 'font-medium text-foreground'}`}>
-                          {user.mobile}
+                        <span className="text-sm font-medium text-foreground">
+                          {user.fullName || 'No Name'}
                         </span>
                       </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground">
+                      {user.mobile}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                       {user.city || '-'}

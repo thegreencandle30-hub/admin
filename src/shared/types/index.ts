@@ -46,6 +46,7 @@ export interface User {
 // Subscription interface
 export interface Subscription {
   plan: 'daily' | 'weekly' | 'custom' | null;
+  planTier?: 'Regular' | 'Premium' | 'International' | 'None';
   startDate: string | null;
   endDate: string | null;
   isActive: boolean;

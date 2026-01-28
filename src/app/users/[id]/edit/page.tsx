@@ -50,6 +50,7 @@ function EditUserForm({ userId }: { userId: string }) {
           isActive: userData.isActive,
           accessDays: undefined,
           isUnlimited: userData.subscription.isUnlimited || false,
+          planTier: userData.subscription.planTier || 'Regular',
           extendSubscription: false,
         });
       } else {
@@ -63,10 +64,11 @@ function EditUserForm({ userId }: { userId: string }) {
     }
   }, [userId]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
 
-    if (type === 'checkbox') {
+    if (e.target instanceof HTMLInputElement && e.target.type === 'checkbox') {
+      const { checked } = e.target;
       setFormData((prev) => ({
         ...prev,
         [name]: checked,
@@ -115,12 +117,24 @@ function EditUserForm({ userId }: { userId: string }) {
     // Build update data - only include changed fields
     const updateData: UpdateUserData = {};
 
+    if (formData.fullName !== (user?.fullName || '')) {
+      updateData.fullName = formData.fullName;
+    }
+
     if (formData.mobile && formData.mobile !== user?.mobile) {
       updateData.mobile = formData.mobile.trim();
     }
 
+    if (formData.city !== (user?.city || '')) {
+      updateData.city = formData.city;
+    }
+
     if (formData.isActive !== user?.isActive) {
       updateData.isActive = formData.isActive;
+    }
+
+    if (formData.planTier !== user?.subscription.planTier) {
+      updateData.planTier = formData.planTier;
     }
 
     // Handle subscription updates
@@ -142,7 +156,7 @@ function EditUserForm({ userId }: { userId: string }) {
 
     if (response.success) {
       showToast({ message: 'User updated successfully', variant: 'success' });
-      router.push(`/users/${userId}`);
+      router.push('/users');
     } else {
       setError(response.error || 'Failed to update user');
     }
@@ -192,7 +206,7 @@ function EditUserForm({ userId }: { userId: string }) {
     <div className="max-w-2xl mx-auto space-y-4 sm:space-y-6">
         {/* Page Header */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-          <Link href={`/users/${userId}`}>
+          <Link href="/users">
             <Button variant="ghost" size="sm">
               <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -217,9 +231,13 @@ function EditUserForm({ userId }: { userId: string }) {
                 <span className="text-muted-foreground">Plan:</span>{' '}
                 <span className="font-medium">
                   {user.subscription.isUnlimited
-                    ? 'Unlimited'
+                    ? `Unlimited (${user.subscription.planTier || 'Regular'})`
+                    : user.subscription.planTier && user.subscription.planTier !== 'None'
+                    ? user.subscription.planTier
                     : user.subscription.plan
                     ? user.subscription.plan.charAt(0).toUpperCase() + user.subscription.plan.slice(1)
+                    : user.hasActiveSubscription
+                    ? 'Active'
                     : 'None'}
                 </span>
               </div>
@@ -316,6 +334,27 @@ function EditUserForm({ userId }: { userId: string }) {
                 Update Subscription
               </label>
 
+              {/* Plan Tier Selection */}
+              <div>
+                <label
+                  htmlFor="planTier"
+                  className="block text-xs font-medium text-muted-foreground mb-1"
+                >
+                  Subscription Tier
+                </label>
+                <select
+                  id="planTier"
+                  name="planTier"
+                  value={formData.planTier}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-input rounded-lg bg-background text-foreground focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+                >
+                  <option value="Regular">Regular</option>
+                  <option value="Premium">Premium</option>
+                  <option value="International">International</option>
+                </select>
+              </div>
+
               {/* Unlimited Toggle */}
               <div className="flex items-center gap-3">
                 <input
@@ -409,7 +448,7 @@ function EditUserForm({ userId }: { userId: string }) {
 
             {/* Submit Buttons */}
             <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t border-border">
-              <Link href={`/users/${userId}`}>
+              <Link href="/users">
                 <Button type="button" variant="secondary">
                   Cancel
                 </Button>

@@ -293,8 +293,8 @@ function UserDetailsContent({ userId }: { userId: string }) {
                     <Badge variant="success" className="mb-2">Active</Badge>
                     <p className="text-sm font-medium text-success">
                       {user.subscription.isUnlimited
-                        ? 'UNLIMITED Access'
-                        : `${user.subscription.plan?.toUpperCase()} Plan`}
+                        ? `UNLIMITED ${user.subscription.planTier ? user.subscription.planTier.toUpperCase() : ''} Access`
+                        : `${user.subscription.planTier || (user.subscription.plan ? user.subscription.plan.toUpperCase() : 'Premium')} Plan`}
                     </p>
                   </div>
                   <div className="flex justify-between text-sm">

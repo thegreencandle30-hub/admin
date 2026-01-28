@@ -27,12 +27,13 @@ export interface PaymentsResponse {
 }
 
 export interface CreateUserData {
-  fullName?: string;
+  fullName: string;
   mobile: string;
+  password: string;
   city?: string;
-  isActive?: boolean;
-  accessDays?: number;
-  isUnlimited?: boolean;
+  planId?: string;
+  accessDuration?: string | number; // 'unlimited' or number of days
+  planTier?: 'Regular' | 'Premium' | 'International';
 }
 
 export interface UpdateUserData {
@@ -42,6 +43,7 @@ export interface UpdateUserData {
   isActive?: boolean;
   accessDays?: number;
   isUnlimited?: boolean;
+  planTier?: 'Regular' | 'Premium' | 'International' | 'None';
   extendSubscription?: boolean;
 }
 
@@ -113,8 +115,8 @@ export const activateSubscription = async (
  */
 export const createUser = async (
   data: CreateUserData
-): Promise<ClientResponse<{ user: User; message: string }>> => {
-  return apiClient<{ user: User; message: string }>('/admin/users', {
+): Promise<ClientResponse<{ user: User }>> => {
+  return apiClient<{ user: User }>('/admin/users/create', {
     method: 'POST',
     body: JSON.stringify(data),
   });
