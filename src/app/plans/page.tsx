@@ -6,6 +6,14 @@ import { Button, Badge, Input } from '@/components/atoms';
 import { useToast, ConfirmDialog, FormField } from '@/components/molecules';
 import { getSubscriptionPlans, updateSubscriptionPlan, createSubscriptionPlan, deleteSubscriptionPlan, SubscriptionPlan } from '@/services/subscription-service';
 
+const DURATION_OPTIONS = [
+  { label: 'Daily', days: 1 },
+  { label: 'Weekly', days: 7 },
+  { label: 'Monthly', days: 30 },
+  { label: 'Yearly', days: 365 },
+  { label: 'Lifetime', days: 36500 },
+];
+
 export default function PlansPage() {
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -26,7 +34,7 @@ export default function PlansPage() {
     price: 0,
     currency: 'INR',
     maxTargetsVisible: 2,
-    reminderHours: 24,
+    reminderHours: 24, // Keep as default, but hidden from UI
   });
 
   const fetchPlans = async () => {
@@ -205,15 +213,13 @@ export default function PlansPage() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Duration:</span>
-                    <span className="font-medium">{plan.durationLabel} ({plan.durationDays} days)</span>
+                    <span className="font-medium">
+                      {plan.durationLabel === 'Lifetime' ? plan.durationLabel : `${plan.durationLabel} (${plan.durationDays} days)`}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Targets Visible:</span>
                     <span className="font-medium">{plan.maxTargetsVisible === 99 ? 'ALL' : plan.maxTargetsVisible}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Reminders:</span>
-                    <span className="font-medium">{plan.reminderHours}h before exp.</span>
                   </div>
                 </div>
 
@@ -281,22 +287,31 @@ export default function PlansPage() {
                       <option value="USD">USD ($)</option>
                     </select>
                   </FormField>
-                  <FormField label="Duration (Days)">
-                    <Input
-                      type="number"
-                      value={formData.durationDays}
-                      onChange={(e) => setFormData({ ...formData, durationDays: parseInt(e.target.value) })}
-                      placeholder="30"
+                  <FormField label="Plan Duration">
+                    <select
+                      className="w-full px-3 py-2 rounded-3xl bg-input border border-border text-foreground focus:ring-2 focus:ring-primary/20 outline-none"
+                      value={`${formData.durationDays}|${formData.durationLabel}`}
+                      onChange={(e) => {
+                        const [days, label] = e.target.value.split('|');
+                        setFormData({ 
+                          ...formData, 
+                          durationDays: parseInt(days), 
+                          durationLabel: label 
+                        });
+                      }}
                       required
-                    />
-                  </FormField>
-                  <FormField label="Duration Label">
-                    <Input
-                      value={formData.durationLabel}
-                      onChange={(e) => setFormData({ ...formData, durationLabel: e.target.value })}
-                      placeholder="e.g. 1 Month"
-                      required
-                    />
+                    >
+                      {DURATION_OPTIONS.map(opt => (
+                        <option key={opt.label} value={`${opt.days}|${opt.label}`}>
+                          {opt.label === 'Lifetime' ? opt.label : `${opt.label} (${opt.days} days)`}
+                        </option>
+                      ))}
+                      {!DURATION_OPTIONS.some(opt => opt.days === formData.durationDays && opt.label === formData.durationLabel) && (
+                        <option value={`${formData.durationDays}|${formData.durationLabel}`}>
+                          {formData.durationLabel === 'Lifetime' ? formData.durationLabel : `${formData.durationLabel} (${formData.durationDays} days)`}
+                        </option>
+                      )}
+                    </select>
                   </FormField>
                   <FormField label="Targets Visible">
                     <Input
@@ -304,15 +319,6 @@ export default function PlansPage() {
                       value={formData.maxTargetsVisible}
                       onChange={(e) => setFormData({ ...formData, maxTargetsVisible: parseInt(e.target.value) })}
                       placeholder="2"
-                      required
-                    />
-                  </FormField>
-                  <FormField label="Reminder (Hours before exp)">
-                    <Input
-                      type="number"
-                      value={formData.reminderHours}
-                      onChange={(e) => setFormData({ ...formData, reminderHours: parseInt(e.target.value) })}
-                      placeholder="24"
                       required
                     />
                   </FormField>

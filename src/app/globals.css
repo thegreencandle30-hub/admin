@@ -326,6 +326,10 @@ a {
   color: var(--success);
 }
 
+.bg-success {
+  background-color: var(--success);
+}
+
 .text-destructive {
   color: var(--destructive);
 }

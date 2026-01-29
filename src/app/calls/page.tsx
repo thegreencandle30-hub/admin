@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { DashboardLayout } from '@/components/templates';
 import { Button, Badge } from '@/components/atoms';
-import { getCalls, deleteCall } from '@/services/call-service';
+import { getCalls, deleteCall, updateTargetStatus } from '@/services/call-service';
 import { ConfirmDialog, TargetsModal, useToast } from '@/components/molecules';
 import type { Call } from '@/services/call-service';
 import type { Pagination, ClientResponse, PaginatedResponse } from '@/shared/types';
@@ -23,8 +23,9 @@ const COMMODITY_OPTIONS = [
 const STATUS_OPTIONS = [
   { value: '', label: 'All Status' },
   { value: 'active', label: 'Active' },
-  { value: 'hit_target', label: 'Hit Target' },
-  { value: 'hit_stoploss', label: 'Hit Stoploss' },
+  { value: 'partial_hit', label: 'Partial Hit' },
+  { value: 'all_hit', label: 'All Targets Hit' },
+  { value: 'hit_stoploss', label: 'Stoploss Hit' },
   { value: 'expired', label: 'Expired' },
 ];
 
@@ -34,11 +35,13 @@ const TYPE_OPTIONS = [
   { value: 'sell', label: 'Sell' },
 ];
 
-const getStatusBadgeVariant = (status: string): 'success' | 'danger' | 'warning' | 'default' => {
+const getStatusBadgeVariant = (status: string): 'success' | 'danger' | 'warning' | 'default' | 'info' => {
   switch (status) {
     case 'active':
       return 'warning';
-    case 'hit_target':
+    case 'partial_hit':
+      return 'info';
+    case 'all_hit':
       return 'success';
     case 'hit_stoploss':
       return 'danger';
@@ -155,6 +158,23 @@ function CallsContent() {
   const handleViewTargets = (call: Call) => {
     setSelectedCallForTargets(call);
     setTargetsModalOpen(true);
+  };
+
+  const handleUpdateTargetStatus = async (targetId: string, isAcheived: boolean) => {
+    if (!selectedCallForTargets) return;
+    const callId = selectedCallForTargets.id || selectedCallForTargets._id;
+    if (!callId) return;
+
+    const response = await updateTargetStatus(callId, targetId, isAcheived);
+    if (response.success && response.data) {
+      // Update local state
+      const updatedCall = response.data;
+      setCalls(calls.map(c => (c.id || c._id) === callId ? updatedCall : c));
+      setSelectedCallForTargets(updatedCall);
+      showToast({ message: 'Target status updated', variant: 'success' });
+    } else {
+      showToast({ message: response.error || 'Update failed', variant: 'error' });
+    }
   };
 
   const formatPrice = (price: number): string => {
@@ -393,6 +413,7 @@ function CallsContent() {
             setTargetsModalOpen(false);
             setSelectedCallForTargets(null);
           }}
+          onUpdateTarget={handleUpdateTargetStatus}
         />
 
         {/* Pagination */}

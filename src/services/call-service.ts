@@ -2,9 +2,11 @@ import { apiClient } from './api-client';
 import type { ClientResponse, PaginatedResponse } from '@/shared/types';
 
 export interface TargetPrice {
+  _id?: string;
   price: number;
   label: string;
   order: number;
+  isAcheived: boolean;
 }
 
 export interface Call {
@@ -19,7 +21,7 @@ export interface Call {
   stopLoss: number;
   analysis: string;
   tradeType: 'intraday' | 'short_term';
-  status: 'active' | 'hit_target' | 'hit_stoploss' | 'expired';
+  status: 'active' | 'partial_hit' | 'all_hit' | 'hit_stoploss' | 'expired';
   date: string;
   createdBy?: {
     _id: string;
@@ -119,12 +121,31 @@ export const deleteCall = async (id: string): Promise<ClientResponse<{ message: 
   });
 };
 
+/**
+ * Update target achievement status
+ */
+export const updateTargetStatus = async (
+  callId: string,
+  targetId: string,
+  isAcheived: boolean
+): Promise<ClientResponse<Call>> => {
+  const response = await apiClient<{ call: Call }>(`/admin/calls/${callId}/targets/${targetId}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ isAcheived }),
+  });
+  return {
+    ...response,
+    data: response.data ? response.data.call : null,
+  };
+};
+
 const callService = {
   getCalls,
   getCallById,
   createCall,
   updateCall,
   deleteCall,
+  updateTargetStatus,
 };
 
 export default callService;

@@ -160,12 +160,24 @@ export const apiClient = async <T>(
       }
     }
 
-    const data = await response.json();
+    // Safely parse JSON or handle empty response
+    let data: any = null;
+    const contentType = response.headers.get('content-type');
+    const isJson = contentType && contentType.includes('application/json');
+    
+    // Some responses (like 204 No Content) have no body
+    if (response.status !== 204 && isJson) {
+      try {
+        data = await response.json();
+      } catch (err) {
+        console.error('Error parsing JSON response:', err);
+      }
+    }
 
     if (!response.ok) {
       return {
         data: null,
-        error: data.message || 'An error occurred',
+        error: data?.message || 'An error occurred',
         success: false,
       };
     }

@@ -69,8 +69,8 @@ export const useToast = (): ToastContextValue => {
 
 function Toast({ item, onClose }: { item: ToastItem; onClose: () => void }) {
   const colorMap: Record<ToastVariant, { bg: string; border: string; text: string }> = {
-    success: { bg: 'bg-green-50 dark:bg-green-900/20', border: 'border-green-200 dark:border-green-800', text: 'text-green-700 dark:text-green-300' },
-    error: { bg: 'bg-red-50 dark:bg-red-900/20', border: 'border-red-200 dark:border-red-800', text: 'text-red-700 dark:text-red-400' },
+    success: { bg: 'bg-green-50 dark:bg-green-900/90', border: 'border-green-200 dark:border-green-400', text: 'text-green-700 dark:text-green-300' },
+    error: { bg: 'bg-red-50 dark:bg-red-900/90', border: 'border-red-200 dark:border-red-800', text: 'text-red-700 dark:text-red-300' },
     info: { bg: 'bg-blue-50 dark:bg-blue-900/20', border: 'border-blue-200 dark:border-blue-800', text: 'text-blue-700 dark:text-blue-300' },
     warning: { bg: 'bg-yellow-50 dark:bg-yellow-900/10', border: 'border-yellow-200 dark:border-yellow-800', text: 'text-yellow-700 dark:text-yellow-300' },
   };

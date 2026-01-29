@@ -22,8 +22,9 @@ const TYPE_OPTIONS = [
 
 const STATUS_OPTIONS = [
   { value: 'active', label: 'Active' },
-  { value: 'hit_target', label: 'Hit Target' },
-  { value: 'hit_stoploss', label: 'Hit Stoploss' },
+  { value: 'partial_hit', label: 'Partial Hit' },
+  { value: 'all_hit', label: 'All Targets Hit' },
+  { value: 'hit_stoploss', label: 'Stoploss Hit' },
   { value: 'expired', label: 'Expired' },
 ];
 
@@ -43,7 +44,7 @@ export default function EditCallPage() {
     customCommodity: '',
     type: 'buy',
     entryPrice: 0,
-    targetPrices: [{ price: 0, label: 'Target 1', order: 1 }],
+    targetPrices: [{ price: 0, label: 'Target 1', order: 1, isAcheived: false }],
     stopLoss: 0,
     analysis: '',
     date: new Date().toISOString().split('T')[0],
@@ -65,7 +66,13 @@ export default function EditCallPage() {
           customCommodity: fetchedCall.customCommodity || '',
           type: fetchedCall.type,
           entryPrice: fetchedCall.entryPrice,
-          targetPrices: fetchedCall.targetPrices || [{ price: 0, label: 'Target 1', order: 1 }],
+          targetPrices: fetchedCall.targetPrices.map(t => ({
+            _id: t._id,
+            price: t.price,
+            label: t.label,
+            order: t.order,
+            isAcheived: t.isAcheived || false
+          })) || [{ price: 0, label: 'Target 1', order: 1, isAcheived: false }],
           stopLoss: fetchedCall.stopLoss,
           analysis: fetchedCall.analysis || '',
           date: fetchedCall.date.split('T')[0],
@@ -109,7 +116,7 @@ export default function EditCallPage() {
       ...formData,
       targetPrices: [
         ...formData.targetPrices,
-        { price: 0, label: `Target ${nextOrder}`, order: nextOrder }
+        { price: 0, label: `Target ${nextOrder}`, order: nextOrder, isAcheived: false }
       ]
     });
   };

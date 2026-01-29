@@ -34,7 +34,7 @@ export default function NewCallPage() {
     customCommodity: '',
     type: 'buy',
     entryPrice: 0,
-    targetPrices: [{ price: 0, label: 'Target 1', order: 1 }],
+    targetPrices: [{ price: 0, label: 'Target 1', order: 1, isAcheived: false }],
     stopLoss: 0,
     analysis: '',
     date: new Date().toISOString().split('T')[0],
@@ -67,7 +67,7 @@ export default function NewCallPage() {
       ...formData,
       targetPrices: [
         ...formData.targetPrices,
-        { price: 0, label: `Target ${nextOrder}`, order: nextOrder }
+        { price: 0, label: `Target ${nextOrder}`, order: nextOrder, isAcheived: false }
       ]
     });
   };
