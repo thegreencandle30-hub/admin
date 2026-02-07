@@ -22,7 +22,7 @@ const TYPE_OPTIONS = [
 
 const STATUS_OPTIONS = [
   { value: 'active', label: 'Active' },
-  { value: 'partial_hit', label: 'Partial Hit' },
+  // { value: 'partial_hit', label: 'Partial Hit' },
   { value: 'all_hit', label: 'All Targets Hit' },
   { value: 'hit_stoploss', label: 'Stoploss Hit' },
   { value: 'expired', label: 'Expired' },
