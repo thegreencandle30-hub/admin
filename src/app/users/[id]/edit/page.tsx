@@ -49,7 +49,7 @@ function EditUserForm({ userId }: { userId: string }) {
           city: userData.city || '',
           isActive: userData.isActive,
           accessDays: undefined,
-          isUnlimited: userData.subscription.isUnlimited || false,
+          isUnlimited: !!userData.subscription.isUnlimited || (userData.subscription.isActive && userData.subscription.endDate === null),
           planTier: userData.subscription.planTier || 'Regular',
           extendSubscription: false,
         });
