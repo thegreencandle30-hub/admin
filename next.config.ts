@@ -26,11 +26,6 @@ const nextConfig: NextConfig = {
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
   },
-
-  // Allow local network access in development
-  experimental: {
-    allowedDevOrigins: ['localhost:3000', '192.168.1.17:3000'],
-  },
   
   // Headers for security and CORS
   async headers() {
